@@ -24,121 +24,119 @@ class Generator():
         self._seed = seed
         self._min_build_area = min_build_area
 
+
     def generate(self, shape: Tuple[int, int], low: int, high: int,
-                 road_width: int,
-                 road_height: int,
-                 building_width: int,
-                 building_height: int,
-                 ) -> Map:
+                    max_road_distance: int,
+                    max_road_size: int,
+                    ) -> Map:
 
         mat = self.__initialize_map(shape, low, high)
 
         self.__generate_helper((0, shape[0]), (0, shape[1]), mat, low, high,
-                               road_width,
-                               road_height,
-                               building_width,
-                               building_height)
-
+                                    max_road_distance,
+                                    max_road_size)
         return Map(shape, mat)
 
     def __generate_helper(self, row_range: Tuple[int, int],
-                          col_range: Tuple[int, int],
-                          mat: [List[Cell]],
-                          low: int, high: int,
-                          road_width: int,
-                          road_height: int,
-                          building_width: int,
-                          building_height: int,
-                          ) -> None:
+                            col_range: Tuple[int, int],
+                            mat: [List[Cell]],
+                            low: int, high: int,
+                            max_road_distance: int,
+                            max_road_size: int,
+                            ) -> None:
 
-        print("SUBDIVIDING: ", row_range, col_range)
-        area = (row_range[1] - row_range[0]) * (col_range[1] - col_range[0])
 
-        if area <= self._min_build_area:
-            print("Area too small")
+        area=(row_range[1]-row_range[0])*(col_range[1]-col_range[0])
+
+        if area<self._min_build_area:
+
             return
-        elif (road_height==0 or road_width==0):
-            print("Road too small")
+        if max_road_distance<=1 or max_road_size<=1:
             return
-        else:
-            print("Area: ", area)
-
-        parcel_queue = []  # queue of parcels to be divided
-
-        p_first = col_range[0]
-        p_second = col_range[0]
-
-        current = ParcelType.BUILDING
-
-        print("DRAWING HORIZONTAL ROAD")
-        while p_first < col_range[1]:
-
-            if current == ParcelType.BUILDING:
 
 
-                p_first = clamp(p_first + building_width, p_first, col_range[1])
-                parcel = (p_second, p_first)
-                parcel_queue.append(parcel)
 
-                current = ParcelType.ROAD
-                p_second = p_first
 
-            else:
+        cursor=col_range[0]
 
-                p_first = clamp(p_first + road_width, p_first, col_range[1])
+        parcels=[]
+
+        parcel_start=col_range[0] #previous parcel start
+
+        while cursor<col_range[1]:
+
+
+                road_size = np.random.randint(1,max_road_size)
+                road_distance = np.random.randint(1,max_road_distance)
+
+                parcels.append((parcel_start,
+                                clamp(parcel_start+road_distance, col_range[0], col_range[1])))
+
+                cursor+=road_distance
+
+                if cursor+road_size>=col_range[1]:
+                    break
 
                 for i in range(row_range[0], row_range[1]):
-                    for j in range(p_second, p_first):
+                    for j in range(cursor, Gcursor+road_size):
                         mat[i][j].value = 0
 
-                p_second = p_first
-                current = ParcelType.BUILDING
+
+                cursor+=road_size
+                parcel_start=cursor
+
+        for _ in range(len(parcels)):
+                parcel=parcels.pop(0)
+
+                cursor=row_range[0]
+
+                parcel_start=row_range[0]
+
+                while cursor<row_range[1]:
+
+
+                    road_size = np.random.randint(1,max_road_size)
+                    road_distance = np.random.randint(1,max_road_distance)
+
+                    cursor+=road_distance
+
+                    parcels.append(((parcel_start,
+                                     clamp(cursor, row_range[0], row_range[1])),
+
+                                    parcel))
+
+                    if cursor+road_size>=row_range[1]:
+                        break
 
 
 
-        # Draw horizontal road
-
-        print("DRAWING VERTICAL ROAD")
-        num_vertical_parcel = len(parcel_queue)
-
-        for _ in range(num_vertical_parcel):
-
-            v_parcel = parcel_queue.pop(0)
-
-            p_first = row_range[0]
-            p_second = row_range[0]
-
-            current = ParcelType.BUILDING
-
-            while p_first < row_range[1]:
-
-                if current == ParcelType.BUILDING:
-                    p_first = clamp(p_first + building_height, p_first, row_range[1])
-                    parcel_queue.append(((p_second, p_first), v_parcel))
-
-                    current = ParcelType.ROAD
-                    p_second = p_first
-
-                else:
-
-                    p_first = clamp(p_first + road_height, p_first, row_range[1])
-
-                    for i in range(v_parcel[0], v_parcel[1]):
-                        for j in range(p_second, p_first):
+                    for i in range(parcel[0], parcel[1]):
+                        for j in range(cursor, cursor+road_size):
+                            print(parcel[1])
                             mat[j][i].value = 0
 
-                    p_second = p_first
-                    current = ParcelType.BUILDING
+                    cursor+=road_size+road_distance
+
+                    parcel_start=cursor
 
 
 
-        print("PARCELLED ")
-        for parcel in parcel_queue:
-            self.__generate_helper(parcel[0], parcel[1], mat, low, high,
-                                   road_width - 1,
-                                   road_height - 1,
-                                   building_width - 2,
-                                   building_height - 2)
+
+        for parcel in parcels:
+            self.__generate_helper(parcel[0],
+                                     parcel[1],
+                                     mat,
+                                     low,
+                                     high,
+                                     max_road_distance-1,
+                                     max_road_size-1)
+
+
+
+
+
+
+
 
     def __initialize_map(self, shape: Tuple[int, int], low: int, high: int) -> List[List[Cell]]:
 
@@ -156,7 +154,7 @@ class Generator():
 if (__name__ == "__main__"):
     generator = Generator(42, 10)
 
-    map = generator.generate((1000, 1000), 1, 100, 4, 4, 20, 20)
+    map = generator.generate((500, 500), 0, 100, 20, 10)
 
     sns.heatmap([[cell.value for cell in row] for row in map.cells])
     plt.show()
