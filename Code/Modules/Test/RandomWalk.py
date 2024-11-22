@@ -2,9 +2,7 @@ import random
 import seaborn as sns
 from matplotlib import pyplot as plt
 
-from Code.Modules.Data.Dataset import Map
-from Code.Modules.Data.Generator import Generator
-
+from Code.Modules.Data import Map,Generator
 
 def random_walk(pos: [int,int],num_steps,map:Map) -> [int]:
     """
@@ -48,23 +46,23 @@ if __name__=="__main__":
     sns.heatmap([[cell.value for cell in row] for row in map.cells])
     plt.show()
 
-    pos=None
+    vehicle=None
     for i in range(450,550):
         for j in range(450,550):
             if map.cells[i][j].value==0:
-                pos=[i,j]
+                vehicle=[i, j]
 
                 break
-        if pos!=None:
+        if vehicle!=None:
             break
 
 
-    v=random_walk(pos,100000,map)
+    v=random_walk(vehicle, 100000, map)
 
     print(list(v))
-    for pos in v:
+    for vehicle in v:
 
-        map.cells[pos[0]][pos[1]].value=-100
+        map.cells[vehicle[0]][vehicle[1]].value=-100
 
 
 

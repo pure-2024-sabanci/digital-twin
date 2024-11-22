@@ -1,5 +1,5 @@
 import numpy as np
-from Code.Modules.Data.Dataset import Map, Cell
+from Code.Modules.Data.MapStructures import Map, Cell
 from typing import Tuple, List
 from pprint import pprint
 import seaborn as sns

@@ -56,6 +56,7 @@ class Map():
 
         if(pos[0]-1>=0 and self.cells[pos[0]-1][pos[1]].value==0):
             possible_directions.append((-1,0))
+
         if(pos[0]+1<self.shape[0] and self.cells[pos[0]+1][pos[1]].value==0):
             possible_directions.append((1,0))
 
