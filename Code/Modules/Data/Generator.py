@@ -133,7 +133,9 @@ class Generator():
 if (__name__ == "__main__"):
     generator = Generator(42, 10)
 
-    map = generator.generate((15, 15), 0, 100, 20, 2)
+
+    generator.generate()
+    map = generator.generate((15, 15), 1, 100, 20, 2)
 
     sns.heatmap([[cell.value for cell in row] for row in map.cells])
     plt.show()

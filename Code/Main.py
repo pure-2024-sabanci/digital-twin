@@ -80,6 +80,8 @@ while running:
 
     if(map.cells[vehicle[0]][vehicle[1]].value!=0):
         print(map.cells[vehicle[0]][vehicle[1]].value)
+
+
     draw_grid(map,screen,vehicle)
 
     pygame.display.flip()
