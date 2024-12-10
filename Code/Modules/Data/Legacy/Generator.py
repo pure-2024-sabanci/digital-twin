@@ -59,7 +59,7 @@ class Generator():
 
         while cursor < col_range[1]:
 
-            road_size = np.random.randint(1, max_road_size)
+            road_size = 1
             road_distance = np.random.randint(1, max_road_distance)
 
             parcels.append((parcel_start,
@@ -86,7 +86,7 @@ class Generator():
 
             while cursor < row_range[1]:
 
-                road_size = np.random.randint(1, max_road_size)
+                road_size = 1
                 road_distance = np.random.randint(1, max_road_distance)
 
                 cursor += road_distance
@@ -134,8 +134,8 @@ if (__name__ == "__main__"):
     generator = Generator(42, 10)
 
 
-    generator.generate()
-    map = generator.generate((15, 15), 1, 100, 20, 2)
+
+    map = generator.generate((15, 15), 1, 100, 20, 1)
 
     sns.heatmap([[cell.value for cell in row] for row in map.cells])
     plt.show()

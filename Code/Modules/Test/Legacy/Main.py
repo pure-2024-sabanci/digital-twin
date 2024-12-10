@@ -4,9 +4,7 @@ import pygame
 from matplotlib import pyplot as plt
 import seaborn as sns
 
-from Modules.Data import Generator,Map
-
-
+from Code.Modules.Data import Generator
 
 SCREEN_SIZE=(1440,1080)
 CELL_SIZE=5
