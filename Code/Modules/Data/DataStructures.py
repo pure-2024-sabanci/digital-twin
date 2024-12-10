@@ -7,12 +7,22 @@ import matplotlib.pyplot as plt
 import pprint
 class DTCity():
 
-    def __init__(self,address):
+    def __init__(self,address,initial_probability=0.5):
 
         self._graph=osmnx.graph_from_place(address,network_type='drive')
 
         self.adjacency_list=nx.to_dict_of_lists(self._graph)
         self.adjacency_matrix=nx.to_numpy_array(self._graph)
+
+        self.nodes=[node for node in self.adjacency_list.keys()]
+        self.edges=[(node,neighbor,initial_probability)
+                    for node in self.adjacency_list.keys()
+                    for neighbor in self.adjacency_list[node]]
+
+
+
+
+
 
     def generate_random_path(self,start,length):
 
@@ -22,8 +32,8 @@ class DTCity():
         return path
 
     def info(self):
-        pprint.pprint(self.adjacency_list)
-        pprint.pprint(self.adjacency_matrix)
+        pprint.pprint(self.nodes)
+        pprint.pprint(self.edges)
     def plot(self):
         osmnx.plot_graph(self._graph)
         plt.show()

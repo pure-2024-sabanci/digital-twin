@@ -1,10 +1,8 @@
 import numpy as np
-from Code.Modules.Data.MapStructures import Map, Cell
+from Code.Modules.Data.Legacy.MapStructures import Map, Cell
 from typing import Tuple, List
-from pprint import pprint
 import seaborn as sns
 import matplotlib.pyplot as plt
-from queue import Queue
 import enum
 
 
@@ -140,3 +138,4 @@ if (__name__ == "__main__"):
     sns.heatmap([[cell.value for cell in row] for row in map.cells])
     plt.show()
     print("Done")
+
