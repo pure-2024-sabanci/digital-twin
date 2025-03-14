@@ -10,43 +10,43 @@ import os
 import matplotlib
 # Rastgele mesafelerle Manhattan graph oluşturma fonksiyonu
 def create_random_manhattan_graph(rows, cols, min_dist=1, max_dist=3):
-	G = nx.Graph()
+    G = nx.Graph()
 
-	node_id = 0
-	# Düğümleri ekle
-	for i in range(rows):
-		for j in range(cols):
-			G.add_node(node_id, pos=(j, -i))
-			node_id += 1
+    node_id = 0
+    # Düğümleri ekle
+    for i in range(rows):
+        for j in range(cols):
+            G.add_node(node_id, pos=(j, -i))
+            node_id += 1
 
-	for i in range(rows):
-		for j in range(cols):
+    for i in range(rows):
+        for j in range(cols):
 
-			if j < cols - 1:
-				G.add_edge(i * cols + j, i * cols + j + 1)
-				G.add_edge(i * cols + j + 1, i * cols + j)
+            if j < cols - 1:
+                G.add_edge(i * cols + j, i * cols + j + 1)
+                G.add_edge(i * cols + j + 1, i * cols + j)
 
 
-			if i < rows - 1:
-				G.add_edge(i * cols + j, (i + 1) * cols + j)
-				G.add_edge((i + 1) * cols + j, i * cols + j)
-	return G
+            if i < rows - 1:
+                G.add_edge(i * cols + j, (i + 1) * cols + j)
+                G.add_edge((i + 1) * cols + j, i * cols + j)
+    return G
 
 def draw_graph(graph,weight_name='weight'):
-	pos=nx.get_node_attributes(graph, 'pos')
-	plt.figure(figsize=(6, 6))
-	edges = graph.edges(data=True)
-	nx.draw(graph, pos, with_labels=True, node_size=500, node_color="lightblue", edge_color="gray")
+    pos=nx.get_node_attributes(graph, 'pos')
+    plt.figure(figsize=(6, 6))
+    edges = graph.edges(data=True)
+    nx.draw(graph, pos, with_labels=True, node_size=500, node_color="lightblue", edge_color="gray")
 
-	edge_labels = {(u, v): f"{d[weight_name]:.1f}" for u, v, d in edges}
-	nx.draw_networkx_edge_labels(graph, pos, edge_labels=edge_labels, font_size=8)
+    edge_labels = {(u, v): f"{d[weight_name]:.1f}" for u, v, d in edges}
+    nx.draw_networkx_edge_labels(graph, pos, edge_labels=edge_labels, font_size=8)
 
-	plt.title("Random Weighted Manhattan Graph (5x5 Grid)")
+    plt.title("Random Weighted Manhattan Graph (5x5 Grid)")
 
-	plt.show()
+    plt.show()
 
 def get_node_node_id(N_ROW,N_COL,pos):
-	return pos[1]+pos[0]*N_ROW
+    return pos[1]+pos[0]*N_ROW
 
 
 import matplotlib.pyplot as plt
@@ -95,11 +95,32 @@ def visualise_algorithm(graph, agents,name="Ajan Rotaları"):
     plt.title("Ajan Rotaları (Tüm agentlar time'a göre birleşik)")
 
     # Graf çizimi
+
+    edge_colors = []
+
+    for u, v in graph.edges():
+        if graph[u][v]['weight'] == graph[u][v]['base']:
+            edge_colors.append('black')
+
+        else:
+            edge_colors.append('red')
+
+
+    formatted_edge_labels = {}
+    not_formatted_edge_labels = {}
+    for (u, v) in graph.edges():
+        if graph[u][v]['weight'] != graph[u][v]['base']:
+            formatted_edge_labels[(u, v)] = f"{graph[u][v]['weight']:.2f}"
+        else:
+            not_formatted_edge_labels[(u, v)] = f"{graph[u][v]['weight']:.2f}"
+
     nx.draw_networkx_nodes(graph, pos, node_color='lightgray', node_size=400, ax=ax)
-    nx.draw_networkx_edges(graph, pos, alpha=0.5, ax=ax)
+    nx.draw_networkx_edges(graph, pos, alpha=0.5, ax=ax, edge_color=edge_colors)
     nx.draw_networkx_labels(graph, pos, font_size=10, ax=ax)
     if formatted_edge_labels:
-        nx.draw_networkx_edge_labels(graph, pos, edge_labels=formatted_edge_labels, ax=ax)
+        nx.draw_networkx_edge_labels(graph, pos, edge_labels=formatted_edge_labels, ax=ax,font_color='red')
+    if not_formatted_edge_labels:
+        nx.draw_networkx_edge_labels(graph, pos, edge_labels=not_formatted_edge_labels, ax=ax,font_color='black')
 
     # 6) Her agent için scatter, line, text objesi
     agent_ids = [getattr(a, 'id', f"A{i}") for i,a in enumerate(agents)]
@@ -185,14 +206,14 @@ def visualise_algorithm(graph, agents,name="Ajan Rotaları"):
 
 
     # write a path to save the video
-    desktop_path = os.path.join(os.path.expanduser("~"), "", "")
+    video_path = "D:/Ana/Projeler/digital-twin/Videos"
 
     # Create the folder if it doesn't exist
-    if not os.path.exists(desktop_path):
-        os.makedirs(desktop_path)
+    if not os.path.exists(video_path):
+        os.makedirs(video_path)
 
     # Create a unique filename for the animation
-    unique_filename = os.path.join(desktop_path, f"Ajan_Rotalari_{int(time.time())}.mp4")
+    unique_filename = os.path.join(video_path, f"Ajan_Rotalari_{int(time.time())}.mp4")
 
     # kaydet
     writervideo = animation.FFMpegWriter(fps=1)
@@ -207,60 +228,60 @@ def visualise_algorithm(graph, agents,name="Ajan Rotaları"):
 
 
 def main():
-	"""
-	Örnek main fonksiyonu, create_random_manhattan_graph ile bir graf oluşturup
-	içine basit bir edge ağırlığı atar, sonra 2 tane örnek agent oluşturur
-	ve en sonunda visualise_algorithm ile animasyonu görüntüler.
-	"""
+    """
+    Örnek main fonksiyonu, create_random_manhattan_graph ile bir graf oluşturup
+    içine basit bir edge ağırlığı atar, sonra 2 tane örnek agent oluşturur
+    ve en sonunda visualise_algorithm ile animasyonu görüntüler.
+    """
 
-	# 1) Parametreler
-	n_rows = 5
-	n_cols = 5
+    # 1) Parametreler
+    n_rows = 5
+    n_cols = 5
 
-	# 2) Graf oluştur
-	G = create_random_manhattan_graph(n_rows, n_cols)
+    # 2) Graf oluştur
+    G = create_random_manhattan_graph(n_rows, n_cols)
 
-	# Örnek olarak her edge'e rastgele bir weight ekleyelim
-	for (u, v) in G.edges():
-		w = random.randint(1, 10)
-		G[u][v]["weight"] = w
-		G[v][u]["weight"] = w  # iki yönlü
+    # Örnek olarak her edge'e rastgele bir weight ekleyelim
+    for (u, v) in G.edges():
+        w = random.randint(1, 10)
+        G[u][v]["weight"] = w
+        G[v][u]["weight"] = w  # iki yönlü
 
-	# 3) Örnek Ajan Nesneleri
-	# Ajanlarda traversed_nodes = [(node_id, time), ...]
-	# ve isterseniz agent_id gibi bir alan olsun.
-	class Agent:
-		def __init__(self, agent_id, traversed_nodes):
-			self.id = agent_id
-			self.traversed_nodes = traversed_nodes
+    # 3) Örnek Ajan Nesneleri
+    # Ajanlarda traversed_nodes = [(node_id, time), ...]
+    # ve isterseniz agent_id gibi bir alan olsun.
+    class Agent:
+        def __init__(self, agent_id, traversed_nodes):
+            self.id = agent_id
+            self.traversed_nodes = traversed_nodes
 
-	# Örnek olarak 2 tane basit rota oluşturuyoruz
-	# Agent A0 => 3 node ziyaret
-	# Agent A1 => 4 node ziyaret
-	A0 = Agent(
-		"A0",
-		[
-			(0, 0),  # (node_id=0, t=0)
-			(1, 2),  # 2. saniyede node=1
-			(6, 5)  # 5. saniyede node=6
-		]
-	)
+    # Örnek olarak 2 tane basit rota oluşturuyoruz
+    # Agent A0 => 3 node ziyaret
+    # Agent A1 => 4 node ziyaret
+    A0 = Agent(
+        "A0",
+        [
+            (0, 0),  # (node_id=0, t=0)
+            (1, 2),  # 2. saniyede node=1
+            (6, 5)  # 5. saniyede node=6
+        ]
+    )
 
-	A1 = Agent(
-		"A1",
-		[
-			(24, 0),  # en altta-right'ta
-			(19, 1),  # ...
-			(14, 3),
-			(9, 6)
-		]
-	)
+    A1 = Agent(
+        "A1",
+        [
+            (24, 0),  # en altta-right'ta
+            (19, 1),  # ...
+            (14, 3),
+            (9, 6)
+        ]
+    )
 
-	agents = [A0, A1]
+    agents = [A0, A1]
 
-	# 4) Görselleştir
-	visualise_algorithm(G, agents)
+    # 4) Görselleştir
+    visualise_algorithm(G, agents)
 
 
 if __name__ == "__main__":
-	main()
+    main()

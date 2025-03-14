@@ -57,7 +57,7 @@ def graph_same(heuristic_map,graph):
 	return True
 
 
-def algorithm(graph, edge_binom_probs, n_agents, cost_multiplier, source, target, EXPLORATION_FAVOR):
+def algorithm(graph, edge_bernoulli_probs, n_agents, cost_function, source, target, EXPLORATION_FAVOR):
 
 	# Agent Initialization Phase
 	agents=[]
@@ -66,7 +66,7 @@ def algorithm(graph, edge_binom_probs, n_agents, cost_multiplier, source, target
 
 		for u, v in graph.edges:
 
-			edge_prob = edge_binom_probs[(u, v)]#*(1-EXPLORATION_FAVOR) + uniform.rvs(0,1)*EXPLORATION_FAVOR
+			edge_prob = edge_bernoulli_probs[(u, v)]#*(1-EXPLORATION_FAVOR) + uniform.rvs(0,1)*EXPLORATION_FAVOR
 
 			if edge_prob > 1:
 				edge_prob = 1
@@ -75,6 +75,7 @@ def algorithm(graph, edge_binom_probs, n_agents, cost_multiplier, source, target
 
 			state = bernoulli.rvs(edge_prob)
 			if (state == 1):
+				cost_multiplier = cost_function()
 				heuristic_map[(u, v)] = graph[u][v]['base'] * cost_multiplier
 				heuristic_map[(v, u)] = graph[u][v]['base'] * cost_multiplier
 			else:
@@ -129,10 +130,16 @@ def algorithm(graph, edge_binom_probs, n_agents, cost_multiplier, source, target
 			total_time += min_time
 		for i in range(len(agents)):
 
-			print(finished_agent_ids)
+			def custom_weight(u, v, data):
+				if (u, v) in explored_edges or (v, u) in explored_edges:
+
+					return graph[u][v]['weight']
+				else:
+
+					return agent.heuristic_map[(u, v)]
 
 			if i in finished_agent_ids:
-				print("Agent ",agents[i].id," has already reached the target")
+
 				continue
 
 			agent = agents[i]
@@ -140,7 +147,7 @@ def algorithm(graph, edge_binom_probs, n_agents, cost_multiplier, source, target
 
 				agent.remaining_cost -= agent.velocity*min_time
 
-			if agent.remaining_cost <= 0:
+			"""if agent.remaining_cost <= 0:
 				if(agent.current_edge!=None):
 
 					explored_edges.add(agent.current_edge)
@@ -178,6 +185,41 @@ def algorithm(graph, edge_binom_probs, n_agents, cost_multiplier, source, target
 
 				agent.current_edge = (path[0], path[1])
 
+				agent.remaining_cost = graph[path[0]][path[1]]['weight']"""
+
+
+			# Agent finished its current edge
+			if agent.remaining_cost <= 0:
+
+
+				if (agent.current_edge != None):
+
+					explored_edges.add(agent.current_edge)
+					explored_edges.add((agent.current_edge[1], agent.current_edge[0]))
+					agent.last_seen_node = agent.current_edge[1]
+
+				else:
+					agent.last_seen_node = source
+
+				agent.traversed_nodes.append((agent.last_seen_node, total_time))
+
+				if agent.last_seen_node == target:
+					finished_agent_ids.add(agent.id)
+					continue
+
+				#### This Function is Problematic !Implement Pathfinding Manually
+				path = nx.dijkstra_path(graph, agent.last_seen_node, target, weight=custom_weight)
+
+				if (agent.prev_route != None):
+					if (agent.prev_route != path):
+						route_change += 1
+
+
+				agent.prev_route = path
+
+
+				agent.current_edge = (path[0], path[1])
+
 				agent.remaining_cost = graph[path[0]][path[1]]['weight']
 
 
@@ -202,8 +244,8 @@ if __name__ == "__main__":
 	decline=0
 
 	# SYNTHETIC GRAPH PARAMETERS
-	N_ROWS = 6
-	N_COLS = 6
+	N_ROWS = 10
+	N_COLS = 10
 	NUMBER_OF_NODES = N_ROWS * N_COLS
 	MIN_WEIGHT = 15
 	MAX_WEIGHT = 100
@@ -212,8 +254,9 @@ if __name__ == "__main__":
 	EXPLORATION_FAVOR=0 # 0 ->Heuristics are same as the graph, 1->Heuristics are random
 	SOURCE_NODE=0
 	TARGET_NODE=NUMBER_OF_NODES-1
-	NUMBER_OF_AGENTS=10
-	COST_MULTIPLIER=200
+	NUMBER_OF_AGENTS=5
+	COST_EPSILON=1e-15
+	COST_FUNCTION = lambda : 1/uniform.rvs(COST_EPSILON,1)
 
 	true_paths=[]
 	true_path_lengths=[]
@@ -232,27 +275,28 @@ if __name__ == "__main__":
 
 	graph=create_random_manhattan_graph(N_ROWS,N_COLS)
 
-	edge_binom_probs = {(u, v): uniform.rvs(0,1) for u, v in graph.edges}
+	edge_bernoulli_probs = {(u, v): uniform.rvs(0, 1) for u, v in graph.edges}
 
 
 	for u, v in graph.edges:
 		graph[u][v]['base'] = random.uniform(MIN_WEIGHT, MAX_WEIGHT)
 
-		state = bernoulli.rvs(edge_binom_probs[(u, v)])
+		state = bernoulli.rvs(edge_bernoulli_probs[(u, v)])
 		if (state == 1):
-			graph[u][v]['weight'] = graph[u][v]['base'] * COST_MULTIPLIER
-			graph[v][u]['weight'] = graph[u][v]['base'] * COST_MULTIPLIER
+			cost_mult = COST_FUNCTION()
+			graph[u][v]['weight'] = graph[u][v]['base'] * cost_mult
+			graph[v][u]['weight'] = graph[u][v]['base'] * cost_mult
 		else:
 			graph[u][v]['weight'] = graph[u][v]['base']
 			graph[v][u]['weight'] = graph[u][v]['base']
 
 
 
-	agents,route_change=algorithm(graph,edge_binom_probs,
-	                             NUMBER_OF_AGENTS,
-	                             COST_MULTIPLIER,
-	                             SOURCE_NODE,TARGET_NODE,
-	                             EXPLORATION_FAVOR)
+	agents,route_change=algorithm(graph, edge_bernoulli_probs,
+	                              NUMBER_OF_AGENTS,
+	                              COST_FUNCTION,
+	                              SOURCE_NODE, TARGET_NODE,
+	                              EXPLORATION_FAVOR)
 
 	print("Route Change: ",route_change)
 
