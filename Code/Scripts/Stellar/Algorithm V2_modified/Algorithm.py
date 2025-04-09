@@ -191,7 +191,6 @@ def algorithm(graph, edge_bernoulli_probs, n_agents, cost_function, source, targ
 			# Agent finished its current edge
 			if agent.remaining_cost <= 0:
 
-
 				if (agent.current_edge != None):
 
 					explored_edges.add(agent.current_edge)
@@ -244,8 +243,8 @@ if __name__ == "__main__":
 	decline=0
 
 	# SYNTHETIC GRAPH PARAMETERS
-	N_ROWS = 10
-	N_COLS = 10
+	N_ROWS = 6
+	N_COLS = 6
 	NUMBER_OF_NODES = N_ROWS * N_COLS
 	MIN_WEIGHT = 15
 	MAX_WEIGHT = 100
@@ -294,11 +293,12 @@ if __name__ == "__main__":
 
 	agents,route_change=algorithm(graph, edge_bernoulli_probs,
 	                              NUMBER_OF_AGENTS,
-	                              COST_FUNCTION,
+	                              COST_FUNCTION
 	                              SOURCE_NODE, TARGET_NODE,
 	                              EXPLORATION_FAVOR)
 
 	print("Route Change: ",route_change)
+
 
 
 	# Visualize the graph and the agents
